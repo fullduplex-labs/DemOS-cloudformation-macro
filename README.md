@@ -1,1 +1,1 @@
-# DemOS-cloudformation-macro
+# DemOS CloudFormation Macro

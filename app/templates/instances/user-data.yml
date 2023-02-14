@@ -1,0 +1,26 @@
+#cloud-config
+fqdn: {{ data.HostName }}
+manage_etc_hosts: localhost
+packages:
+- aws-cfn-bootstrap
+- amazon-ecr-credential-helper
+- jq
+- wget
+locale: C.UTF-8
+runcmd:
+- /opt/cloud-init.sh
+write_files:
+- path: /opt/cloud-init.sh
+  permissions: '0700'
+  content: |
+    #!/usr/bin/env bash
+
+    /opt/aws/bin/cfn-init -v \
+      --region "{{ DemOS.Region }}" \
+      --resource "{{ data.ResourceName }}" \
+      --stack "{{ DemOS.StackName }}"
+
+    /opt/aws/bin/cfn-signal -e $? \
+      --region "{{ DemOS.Region }}" \
+      --reason "$(tail /var/log/cfn-init-cmd.log)" \
+      "{{ '${'~data.Handle~'}' }}"
