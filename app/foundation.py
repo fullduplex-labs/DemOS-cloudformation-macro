@@ -448,12 +448,14 @@ def make_Certificates():
     'Internal',
     'External',
     'DiffieHellman',
-    'Public'
+    'Public',
+    'VpnGateway'
   ]
 
   properties = dict(
     ServiceToken = DemOS.CertificateAuthority,
     Name = DemOS.Name,
+    Label = DemOS.Label,
     Path = f'/{DemOS.Namespace}/{DemOS.Project}/{DemOS.Name}/Certificates'
   )
 
@@ -465,8 +467,13 @@ def make_Certificates():
       Properties = properties
     )
 
-    if cert not in ['Authority', 'Public']:
+    if cert in ['Internal', 'External']:
       resource['DependsOn'] = DemOS.certificates['Authority']
+    elif cert == 'VpnGateway':
+      resource['DependsOn'] = [
+        DemOS.certificates['Authority'],
+        DemOS.certificates['Internal']
+      ]
 
     DemOS.resource(resourceName, resource)
     DemOS.certificates[cert] = resourceName

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import _globals as DemOS
-import foundation
 
 def make():
   make_iam_ExecutionRole('Default')
@@ -104,58 +103,17 @@ def make_iam_ExecutionRole(service):
 
 def make_service_VpnGateway():
 
-  token = DemOS.StackId.split('/')[-1]
-  file = f'{DemOS.Name}.{DemOS.Domain}.ovpn'
-  bucket = DemOS.BucketVpnGatewayProfiles
-
-  vpnGatewayProfile = f'{bucket}/{token}/{file}'
-
-  endpoint = f'https://{bucket}.s3.{DemOS.Region}.amazonaws.com'
-  DemOS.output('VpnProfile', f'{endpoint}/{token}/{file}', 'on')
-
-  foundation.make_ssm_Secret('VpnGateway')
+  DemOS.output(
+    'VpnProfile',
+    {'Fn::GetAtt': f'{DemOS.certificates["VpnGateway"]}.Profile'},
+    'on'
+  )
 
   make_service(dict(
     Name = 'VpnGateway',
-    Role = dict(
-      DependsOn = [
-        DemOS.secrets['VpnGateway']
-      ],
-      Policy = [
-        {
-          'Effect': 'Allow',
-          'Action': [
-            'ssm:GetParameter',
-            'ssm:PutParameter'
-          ],
-          'Resource': {'Fn::GetAtt': f'{DemOS.secrets["VpnGateway"]}.Arn'}
-        },
-        {
-          'Effect': 'Allow',
-          'Action': [
-            'kms:Encrypt',
-            'kms:Decrypt'
-          ],
-          'Resource': '*',
-          'Condition': {
-            'ForAnyValue:StringLike': {
-              'kms:ResourceAliases': DemOS.KeyAlias
-            }
-          }
-        },
-        {
-          'Effect': 'Allow',
-          'Action': [
-            's3:PutObject',
-            's3:PutObjectAcl'
-          ],
-          'Resource': f'arn:aws:s3:::{vpnGatewayProfile}'
-        }
-      ]
-    ),
     Task = dict(
       DependsOn = [
-        DemOS.secrets['VpnGateway']
+        DemOS.certificatePackage
       ],
       Instance = 'Manager',
       NetworkMode = 'host',
@@ -165,7 +123,8 @@ def make_service_VpnGateway():
         'external-cert': f'{DemOS.certificatePath}/external/cert.pem',
         'internal-key': f'{DemOS.certificatePath}/internal/key.pem',
         'internal-cert': f'{DemOS.certificatePath}/internal/cert.pem',
-        'diffie-hellman': f'{DemOS.certificatePath}/diffiehellman/params.pem'
+        'diffie-hellman': f'{DemOS.certificatePath}/diffiehellman/params.pem',
+        'tls-key': f'{DemOS.certificatePath}/vpngateway/key.pem'
       },
       Containers = [
         dict(
@@ -187,22 +146,11 @@ def make_service_VpnGateway():
             Command = ['CMD-SHELL', 'pidof openvpn']
           ),
           Environment = [
-            dict(Name = 'AwsRegion', Value = DemOS.Region),
-            dict(Name = 'KeyAlias', Value = DemOS.KeyAlias),
             dict(Name = 'PrivateDomain', Value = DemOS.PrivateDomain),
             dict(Name = 'PublicDomain', Value = DemOS.PublicDomain),
             dict(Name = 'SubnetPortalCidr', Value = DemOS.Subnets['Portal']),
             dict(Name = 'SubnetOpsCidr', Value = DemOS.Subnets['Ops']),
             dict(Name = 'VpnGatewayCidr', Value = DemOS.Subnets['Vpn']),
-            dict(Name = 'VpnGatewayKey', Value = {
-              'Fn::GetAtt': f'{DemOS.secrets["VpnGateway"]}.ParameterName'
-            }),
-            dict(Name = 'VpnGatewayEndpoint', Value = DemOS.PublicDomain),
-            dict(Name = 'VpnGatewayProfile', Value = vpnGatewayProfile),
-            dict(
-              Name = 'VpnGatewayProfileDesc',
-              Value = f'{DemOS.Label} ({DemOS.Region})'
-            ),
             dict(Name = 'VpnDevice', Value = 'eth0'),
             dict(Name = 'VpnLocalIp', Value = {
               'Fn::GetAtt': 'InstanceManager.PrivateIp'
@@ -214,7 +162,8 @@ def make_service_VpnGateway():
             'external-cert:/etc/openvpn/server/server.crt',
             'diffie-hellman:/etc/openvpn/server/dhparams.pem',
             'internal-key:/etc/openvpn/client/client.key',
-            'internal-cert:/etc/openvpn/client/client.crt'
+            'internal-cert:/etc/openvpn/client/client.crt',
+            'tls-key:/etc/openvpn/server/vpn.key'
           ]
         )
       ]

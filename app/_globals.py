@@ -38,7 +38,6 @@ GlobalOpsCidrs = json.loads(os.environ['GlobalOpsCidrs'])
 Subnets = json.loads(os.environ['Subnets'])
 Workers = json.loads(os.environ['Workers'])
 InstancesAmi = os.environ['InstancesAmi']
-BucketVpnGatewayProfiles = os.environ['BucketVpnGatewayProfiles']
 RegionVpcSubnetZones = ['a', 'b']
 
 # Globals: provided by CloudFormation macro invocation
