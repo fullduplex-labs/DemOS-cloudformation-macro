@@ -13,38 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from textwrap import dedent
-
 import _globals as DemOS
 import foundation
 
 def make():
-  make_ec2_KeyPair()
-
   make_manager()
   make_workers()
-
-def make_ec2_KeyPair():
-  resourceName = 'KeyPairInstances'
-  DemOS.keyPair = resourceName
-
-  DemOS.resource('RSAKeyInstances', dict(
-    Type = 'Custom::RSAKey',
-    Properties = dict(
-      Name = f'/{DemOS.Namespace}/{DemOS.Project}/{DemOS.Name}/instances/key',
-      ServiceToken = DemOS.SecretProvider
-    )
-  ))
-
-  DemOS.resource(resourceName,  dict(
-    Type = 'Custom::KeyPair',
-    DependsOn = 'RSAKeyInstances',
-    Properties = dict(
-      Name = f'{DemOS.Namespace}-{DemOS.Project}-{DemOS.Name}'.lower(),
-      PublicKeyMaterial = {'Fn::GetAtt': 'RSAKeyInstances.PublicKey'},
-      ServiceToken = DemOS.SecretProvider
-    )
-  ))
 
 def make_manager():
   instance = dict(
@@ -379,7 +353,7 @@ def make_ec2_Instance(instance):
     'FileSystem',
     'MountTarget',
     'AccessPoint',
-    DemOS.keyPair,
+    DemOS.certificates['SSH'],
     instance['Profile'],
     instance['Handle']
   ]
@@ -449,7 +423,7 @@ def make_ec2_Instance(instance):
       ImageId = DemOS.InstancesAmi,
       InstanceType = instance['InstanceType'],
       IamInstanceProfile = {'Ref': instance['Profile']},
-      KeyName = {'Fn::GetAtt': f'{DemOS.keyPair}.Name'},
+      KeyName = {'Fn::GetAtt': f'{DemOS.certificates["SSH"]}.Name'},
       PropagateTagsToVolumeOnCreation = True,
       PrivateDnsNameOptions = dict(
         EnableResourceNameDnsARecord = False

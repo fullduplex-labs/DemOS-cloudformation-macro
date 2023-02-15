@@ -105,16 +105,12 @@ def make_service_VpnGateway():
 
   DemOS.output(
     'VpnProfile',
-    {'Fn::GetAtt': f'{DemOS.certificates["VpnGateway"]}.Profile'},
-    'on'
+    {'Fn::GetAtt': f'{DemOS.certificates["VpnGateway"]}.Profile'}
   )
 
   make_service(dict(
     Name = 'VpnGateway',
     Task = dict(
-      DependsOn = [
-        DemOS.certificatePackage
-      ],
       Instance = 'Manager',
       NetworkMode = 'host',
       Mounts = {

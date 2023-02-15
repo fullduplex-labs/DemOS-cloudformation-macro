@@ -30,7 +30,6 @@ Project = os.environ['Project']
 Domain = os.environ['Domain']
 KeyAlias = os.environ['KeyAlias']
 CertificateAuthority = os.environ['CertificateAuthority']
-SecretProvider = os.environ['SecretProvider']
 HostedZoneId = os.environ['HostedZoneId']
 HostedZoneName = os.environ['HostedZoneName']
 ProductName = os.environ['ProductName']
@@ -133,7 +132,7 @@ def resource(name, resource, overwrite=False):
 
   _resources[name] = resource
 
-def output(key, value, state):
+def output(key, value, state='on'):
   global _outputs
 
   if state.title() in [State, 'All']:

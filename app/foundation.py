@@ -448,6 +448,7 @@ def make_Certificates():
     'Internal',
     'External',
     'DiffieHellman',
+    'SSH',
     'Public',
     'VpnGateway'
   ]
@@ -534,32 +535,3 @@ def make_logs_LogGroups():
           LogGroupName = DemOS.Logs[group][log]['Name']
         )
       ))
-
-def make_ssm_Secret(label, value=None, length=None):
-  resourceName = f'Secret{label}'
-  DemOS.secrets[label] = resourceName
-
-  properties = dict(
-    Name = f'/{DemOS.Namespace}/{DemOS.Project}/{DemOS.Name}/{label}',
-    KeyAlias = DemOS.KeyAlias,
-    ServiceToken = DemOS.SecretProvider,
-    ReturnSecret = True
-  )
-
-  if length is not None:
-    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    alphabet += '0123456789'
-    properties = properties | dict(
-      Alphabet = alphabet,
-      Length = length
-    )
-
-  else:
-    properties = properties | dict(
-      Content = value if value is not None else 'init'
-    )
-
-  DemOS.resource(resourceName, dict(
-    Type = 'Custom::Secret',
-    Properties = properties
-  ))

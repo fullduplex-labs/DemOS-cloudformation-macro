@@ -131,7 +131,9 @@ function initializeManager() {
   aws --region "$AwsRegion" s3 cp "$CertificatePackage" "$EfsRoot/$file"
   tar --directory "$EfsRoot" -xzf "$EfsRoot/$file"
   rm "$EfsRoot/$file"
-  chmod 600 $EfsRoot/${file%.*}/*/key.pem
+  chmod 600 \
+    $EfsRoot/${file%.*}/*/key.pem \
+    $EfsRoot/${file%.*}/*/private.pem
 
   sysctl -qw net.ipv4.conf.eth0.forwarding=1
   sysctl -qw net.ipv4.conf.eth0.send_redirects=0
