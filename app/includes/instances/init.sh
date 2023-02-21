@@ -135,6 +135,11 @@ function initializeManager() {
     $EfsRoot/${file%.*}/*/key.pem \
     $EfsRoot/${file%.*}/*/private.pem
 
+  cp $EfsRoot/${file%.*}/authority/cert.pem \
+    /etc/pki/ca-trust/source/anchors/private-ca.crt
+  update-ca-trust force-enable
+  update-ca-trust extract
+
   sysctl -qw net.ipv4.conf.eth0.forwarding=1
   sysctl -qw net.ipv4.conf.eth0.send_redirects=0
 

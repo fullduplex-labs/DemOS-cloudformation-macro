@@ -456,8 +456,7 @@ def make_Certificates():
   properties = dict(
     ServiceToken = DemOS.CertificateAuthority,
     Name = DemOS.Name,
-    Label = DemOS.Label,
-    Path = f'/{DemOS.Namespace}/{DemOS.Project}/{DemOS.Name}/Certificates'
+    Label = DemOS.Label
   )
 
   for cert in certificates:

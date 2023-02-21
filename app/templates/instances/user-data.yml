@@ -1,12 +1,12 @@
 #cloud-config
 fqdn: {{ data.HostName }}
+locale: C.UTF-8
 manage_etc_hosts: localhost
 packages:
 - aws-cfn-bootstrap
 - amazon-ecr-credential-helper
 - jq
 - wget
-locale: C.UTF-8
 runcmd:
 - /opt/cloud-init.sh
 write_files:
