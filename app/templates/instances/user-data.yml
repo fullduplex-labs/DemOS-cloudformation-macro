@@ -5,7 +5,6 @@ manage_etc_hosts: localhost
 packages:
 - aws-cfn-bootstrap
 - amazon-ecr-credential-helper
-- jq
 - wget
 runcmd:
 - /opt/cloud-init.sh

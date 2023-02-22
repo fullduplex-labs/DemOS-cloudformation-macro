@@ -146,11 +146,7 @@ def make_service_VpnGateway():
             dict(Name = 'PublicDomain', Value = DemOS.PublicDomain),
             dict(Name = 'SubnetPortalCidr', Value = DemOS.Subnets['Portal']),
             dict(Name = 'SubnetOpsCidr', Value = DemOS.Subnets['Ops']),
-            dict(Name = 'VpnGatewayCidr', Value = DemOS.Subnets['Vpn']),
-            dict(Name = 'VpnDevice', Value = 'eth0'),
-            dict(Name = 'VpnLocalIp', Value = {
-              'Fn::GetAtt': 'InstanceManager.PrivateIp'
-            })
+            dict(Name = 'VpnGatewayCidr', Value = DemOS.Subnets['Vpn'])
           ],
           MountPoints = [
             'ca-cert:/etc/openvpn/server/ca.crt',
@@ -245,9 +241,6 @@ def make_ecs_TaskDefinition(service):
 
   if task.get('DependsOn'):
     resource['DependsOn'] += task['DependsOn']
-
-  if task.get('Instance'):
-    resource['DependsOn'].append(f'Instance{task["Instance"]}')
 
   if task.get('Mounts'):
     resource['Properties']['Volumes'] = []
