@@ -469,6 +469,9 @@ def make_Certificates():
 
     if cert in ['Internal', 'External']:
       resource['DependsOn'] = DemOS.certificates['Authority']
+    elif cert == 'Public':
+      # TODO: make this less brittle
+      resource['DependsOn'] = 'InstanceManagerRecordSetPublic0'
     elif cert == 'VpnGateway':
       resource['DependsOn'] = [
         DemOS.certificates['Authority'],
